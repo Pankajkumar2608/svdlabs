@@ -1,0 +1,117 @@
+<svg viewBox="0 0 400 160" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Glitch animation -->
+    <animate id="glitch1" attributeName="x" values="0;2;-1;3;0" dur="0.1s" repeatCount="indefinite" begin="0s"/>
+    <animate id="glitch2" attributeName="x" values="0;-2;1;-3;0" dur="0.15s" repeatCount="indefinite" begin="0.05s"/>
+    
+    <!-- Neon glow filter -->
+    <filter id="neonGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+      <feMerge> 
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    
+    <!-- Amber gradient -->
+    <linearGradient id="amberGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFD700"/>
+      <stop offset="50%" style="stop-color:#FFA500"/>
+      <stop offset="100%" style="stop-color:#FF8C00"/>
+    </linearGradient>
+    
+    <!-- Silver gradient -->
+    <linearGradient id="silverGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#F5F5F5"/>
+      <stop offset="50%" style="stop-color:#C0C0C0"/>
+      <stop offset="100%" style="stop-color:#808080"/>
+    </linearGradient>
+    
+    <!-- Scan line animation -->
+    <linearGradient id="scanLine" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:rgba(255,165,0,0)"/>
+      <stop offset="50%" style="stop-color:rgba(255,165,0,0.3)"/>
+      <stop offset="100%" style="stop-color:rgba(255,165,0,0)"/>
+      <animateTransform attributeName="gradientTransform" type="translate" values="0,-200;0,200;0,-200" dur="2s" repeatCount="indefinite"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="400" height="160" fill="#0a0a0a"/>
+  
+  <!-- Grid pattern -->
+  <defs>
+    <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
+      <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#1a1a1a" stroke-width="0.5"/>
+    </pattern>
+  </defs>
+  <rect width="400" height="160" fill="url(#grid)" opacity="0.3"/>
+  
+  <!-- Main SVD text -->
+  <g font-family="'Courier New', monospace" font-weight="bold" font-size="56" filter="url(#neonGlow)">
+    <!-- S with glitch -->
+    <text x="40" y="65" fill="url(#silverGrad)">
+      S
+      <animateTransform attributeName="transform" type="translate" values="0,0;1,0;-1,0;0,0" dur="0.1s" repeatCount="indefinite" begin="0s"/>
+    </text>
+    
+    <!-- V with amber glow -->
+    <text x="100" y="65" fill="url(#amberGrad)" stroke="#FFA500" stroke-width="1">
+      V
+      <animate attributeName="opacity" values="1;0.8;1;0.9;1" dur="0.3s" repeatCount="indefinite"/>
+    </text>
+    
+    <!-- D with glitch -->
+    <text x="160" y="65" fill="url(#silverGrad)">
+      D
+      <animateTransform attributeName="transform" type="translate" values="0,0;-1,0;1,0;0,0" dur="0.12s" repeatCount="indefinite" begin="0.05s"/>
+    </text>
+  </g>
+  
+  <!-- Glitch overlay for SVD -->
+  <g font-family="'Courier New', monospace" font-weight="bold" font-size="56" opacity="0.6">
+    <text x="41" y="65" fill="#FF0040">S</text>
+    <text x="161" y="65" fill="#00FFFF">D</text>
+    <animate attributeName="opacity" values="0;0.6;0;0.3;0" dur="0.2s" repeatCount="indefinite" begin="0s"/>
+  </g>
+  
+  <!-- LABS text -->
+  <g font-family="'Courier New', monospace" font-weight="normal" font-size="24" letter-spacing="6px">
+    <text x="40" y="110" fill="url(#silverGrad)" opacity="0.9">LABS</text>
+    
+    <!-- Subtle glitch on LABS -->
+    <text x="40" y="110" fill="#FFA500" opacity="0.3">LABS
+      <animate attributeName="opacity" values="0;0.3;0;0.2;0" dur="1.5s" repeatCount="indefinite" begin="0.5s"/>
+    </text>
+  </g>
+  
+  <!-- Tech elements -->
+  <!-- Corner brackets -->
+  <g stroke="url(#amberGrad)" stroke-width="2" fill="none" opacity="0.7">
+    <path d="M15,15 L15,25 M15,15 L25,15"/>
+    <path d="M375,15 L385,15 M385,15 L385,25"/>
+    <path d="M15,145 L15,135 M15,145 L25,145"/>
+    <path d="M375,145 L385,145 M385,145 L385,135"/>
+  </g>
+  
+  <!-- Scanning line -->
+  <rect x="0" y="0" width="400" height="160" fill="url(#scanLine)" opacity="0.1"/>
+  
+  <!-- Digital noise -->
+  <g opacity="0.1">
+    <rect x="220" y="30" width="2" height="8" fill="#FFA500">
+      <animate attributeName="opacity" values="0;1;0" dur="0.3s" repeatCount="indefinite" begin="0s"/>
+    </rect>
+    <rect x="280" y="50" width="1" height="4" fill="#00FFFF">
+      <animate attributeName="opacity" values="0;1;0" dur="0.4s" repeatCount="indefinite" begin="0.2s"/>
+    </rect>
+    <rect x="320" y="80" width="3" height="6" fill="#FF0040">
+      <animate attributeName="opacity" values="0;1;0" dur="0.5s" repeatCount="indefinite" begin="0.1s"/>
+    </rect>
+  </g>
+  
+  <!-- Power indicator -->
+  <circle cx="360" cy="25" r="3" fill="#00FF00" opacity="0.8">
+    <animate attributeName="opacity" values="0.8;0.3;0.8" dur="2s" repeatCount="indefinite"/>
+  </circle>
+</svg>
