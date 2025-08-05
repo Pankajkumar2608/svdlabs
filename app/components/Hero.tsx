@@ -9,7 +9,7 @@ export const Hero = () => {
     setIsVisible(true);
   }, []);
 
-  const handleMouseMove = (e) => {
+  const handleMouseMove = (e: React.MouseEvent) => {
     const rect = e.currentTarget.getBoundingClientRect();
     setMousePosition({
       x: (e.clientX - rect.left) / rect.width,
