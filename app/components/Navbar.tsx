@@ -40,9 +40,9 @@ export default function Navbar() {
         <nav className="fixed top-4 left-1/2 -translate-x-1/2 w-[95%] max-w-7xl mx-auto px-6 py-3 rounded-2xl shadow-lg backdrop-blur-lg z-50">
             <div className="flex items-center justify-between">
                 {/* Logo */}
-                <div className="flex items-center">
-                    <h1 className="text-3xl font-bold text-white">
-                        s<span className="text-amber-500">V</span>d
+                <div className="flex items-center ">
+                    <h1 className="text-3xl font-extrabold text-white">
+                        s<span className="text-[#a9e14e]">V</span>d
                     </h1>
                     {/* <span className="ml-2 text-sm text-slate-400 hidden sm:block">Labs</span> */}
                 </div>
@@ -76,10 +76,10 @@ export default function Navbar() {
                         className={`px-6 py-2 rounded-3xl font-bold transition-all duration-300 ${
                             isAuth
                                 ? 'bg-red-600 hover:bg-red-700 text-white'
-                                : 'font-bold  bg-[#e6e635] hover:bg-amber-600 text-slate-900'
+                                : 'font-bold  bg-[#a9e14e] hover:bg-amber-600 text-slate-900'
                         }`}
                     >
-                        {isAuth ? 'Logout' : 'Join'}
+                        {isAuth ? 'Logout' : 'Join Now'}
                     </button>
 
                     {/* Mobile Menu Button */}

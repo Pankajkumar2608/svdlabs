@@ -49,18 +49,18 @@ export const Hero = () => {
 
         {/* Content */}
         <div className={`relative z-10 text-center px-6 max-w-4xl mx-auto transform transition-all duration-1000 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
-          <h1 className="text-4xl md:text-7xl font-bold text-white mb-6 leading-tight">
+          <h1 className="text-4xl md:text-7xl font-bold text-white mb-6 leading-tight ">
             Society where we bring{' '}
             <span className="relative inline-block">
-              <span className="relative z-10 text-transparent bg-clip-text bg-[#a0eb27]">
+              <span className="relative z-10 text-transparent bg-clip-text bg-[#a0eb27] border-b-2 border-[#a0eb27]">
                 !deas
               </span>
-              <span className="absolute inset-0 blur-md bg-gradient-to-r from-yellow-300 via-yellow-400 to-yellow-500 opacity-50 animate-pulse" />
+              {/* <span className="absolute inset-0 blur-md bg-gradient-to-r from-yellow-300 via-yellow-400 to-yellow-500 opacity-50 animate-pulse" /> */}
             </span>
             {' '}to life
           </h1>
           
-          <p className={`text-xl md:text-2xl text-gray-300 mb-8 max-w-2xl mx-auto transform transition-all duration-1000 delay-300 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
+          <p className={`text-lg md:text-2xl text-gray-300 mb-8 max-w-2xl mx-auto transform transition-all duration-1000 delay-300 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
             Join a community of innovators, creators, and dreamers building the future together
           </p>
 
