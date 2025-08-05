@@ -18,7 +18,6 @@ export default function Navbar() {
     const navItems = [
         { name: 'Home', href: '#home' },
         { name: 'About', href: '#about' },
-        { name: 'Join', href: '#contact' }
     ];
 
     useEffect(() => {
@@ -61,7 +60,7 @@ export default function Navbar() {
                                 >
                                     {item.name}
                                     {activeSection === item.href.substring(1) && (
-                                        <span className="absolute bottom-0 left-0 w-full h-0.5 bg-amber-500 rounded-full" />
+                                        <span className="absolute bottom-0 left-0 w-full h-0.5 bg-[#e6e635] rounded-full" />
                                     )}
                                 </a>
                             </li>
@@ -74,13 +73,13 @@ export default function Navbar() {
                     {/* Auth Button */}
                     <button
                         onClick={handleAuthToggle}
-                        className={`px-4 py-2 rounded-2xl font-medium transition-all duration-300 ${
+                        className={`px-6 py-2 rounded-3xl font-bold transition-all duration-300 ${
                             isAuth
                                 ? 'bg-red-600 hover:bg-red-700 text-white'
-                                : 'font-bold bg-[#e6e635] hover:bg-amber-600 text-slate-900'
+                                : 'font-bold  bg-[#e6e635] hover:bg-amber-600 text-slate-900'
                         }`}
                     >
-                        {isAuth ? 'Logout' : 'Login'}
+                        {isAuth ? 'Logout' : 'Join'}
                     </button>
 
                     {/* Mobile Menu Button */}
