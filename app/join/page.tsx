@@ -296,7 +296,7 @@ export default function JoinUs() {
                   name="whyConsider"
                   value={formData.whyConsider}
                   onChange={handleInputChange}
-                  rows="5"
+                  rows={5}
                   className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:border-[#a0eb27] focus:bg-white/15 transition-all duration-300 resize-none"
                   placeholder="Tell us about your passion for innovation, any relevant experience, projects you've worked on, or what unique perspective you'd bring to our club... (minimum 50 characters)"
                 />
