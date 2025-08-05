@@ -1,11 +1,13 @@
 "use client"
 import React, { useState, useEffect } from 'react';
 import { AnimatedTestimonials } from '@/components/ui/animated-testimonials';
+import { BentoGrid } from '@/components/ui/bento-grid';
 export const AboutUs = () => {
   const [isVisible, setIsVisible] = useState(false);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [activeCard, setActiveCard] = useState(0);
   const [hoveredStat, setHoveredStat] = useState(null);
+
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -227,7 +229,7 @@ export const AboutUs = () => {
                 Your next big idea is just one meeting away!
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <button className="group relative px-6 py-3 bg-[#a9e14e] text-neutral-800 font-bold rounded-full overflow-hidden transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-yellow-400/25">
+                <button onClick={() => { window.location.href = "/join"; }} className="group relative px-6 py-3 bg-[#a9e14e] text-neutral-800 font-bold rounded-full overflow-hidden transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-yellow-400/25">
                   <span className="p md relative z-10 flex items-center justify-center">
                     Join Now
                     <span className="ml-2 group-hover:translate-x-1 transition-transform duration-300">→</span>

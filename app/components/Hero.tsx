@@ -64,8 +64,11 @@ export const Hero = () => {
             Join a community of innovators, creators, and dreamers building the future together
           </p>
 
-          <div className={`flex flex-col sm:flex-row gap-4 justify-center items-center transform transition-all duration-1000 delay-500 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
-            <button className="group relative px-8 py-3 bg-[#a9e14e] text-neutral-800 font-bold rounded-full overflow-hidden transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-yellow-400/25">
+          <div className={`flex flex-col sm:flex-row gap-4 justify-center items-center transform transition-all duration-1000 delay-500 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}` }>
+            <button
+              onClick={() => { window.location.href = "/join"; }}
+              className="group relative px-8 py-3 bg-[#a9e14e] text-neutral-800 font-bold rounded-full overflow-hidden transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-yellow-400/25"
+            >
               <span className="relative z-10">Join Now</span>
               <div className="absolute inset-0 bg-gradient-to-r from-yellow-300 to-yellow-400 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left" />
             </button>

@@ -72,7 +72,7 @@ export default function Navbar() {
                 <div className="flex items-center space-x-4">
                     {/* Auth Button */}
                     <button
-                        onClick={handleAuthToggle}
+                        onClick={() => { window.location.href = "/join"; }}
                         className={`px-6 py-2 rounded-3xl font-bold transition-all duration-300 ${
                             isAuth
                                 ? 'bg-red-600 hover:bg-red-700 text-white'
