@@ -33,6 +33,7 @@ export default function JoinUs() {
   const [errors, setErrors] = useState<Errors>({});
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [submitted, setSubmitted] = useState<boolean>(false);
+  const [submitError, setSubmitError] = useState<string>('');
 
   useEffect(() => {
     setIsVisible(true);
@@ -60,6 +61,11 @@ export default function JoinUs() {
         [name]: ''
       }));
     }
+    
+    // Clear submit error when user makes changes
+    if (submitError) {
+      setSubmitError('');
+    }
   };
 
   const validateForm = () => {
@@ -67,18 +73,24 @@ export default function JoinUs() {
 
     if (!formData.name.trim()) {
       newErrors.name = 'Name is required';
+    } else if (formData.name.trim().length > 100) {
+      newErrors.name = 'Name is too long (max 100 characters)';
     }
 
     if (!formData.email.trim()) {
       newErrors.email = 'Email is required';
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
       newErrors.email = 'Please enter a valid email';
+    } else if (formData.email.length > 255) {
+      newErrors.email = 'Email is too long';
     }
 
     if (!formData.whyConsider.trim()) {
       newErrors.whyConsider = 'Please tell us why we should consider you';
     } else if (formData.whyConsider.trim().length < 50) {
       newErrors.whyConsider = 'Please provide at least 50 characters';
+    } else if (formData.whyConsider.trim().length > 1000) {
+      newErrors.whyConsider = 'Text is too long (max 1000 characters)';
     }
 
     if (!formData.skillToLearn) {
@@ -87,14 +99,16 @@ export default function JoinUs() {
 
     if (formData.skillToLearn === 'software' && !formData.githubLink.trim()) {
       newErrors.githubLink = 'GitHub link is required for software track';
-    } else if (formData.skillToLearn === 'software' && formData.githubLink.trim() && !formData.githubLink.includes('github.com')) {
-      newErrors.githubLink = 'Please provide a valid GitHub link';
+    } else if (formData.skillToLearn === 'software' && formData.githubLink.trim() && 
+               (!formData.githubLink.includes('github.com') || !formData.githubLink.startsWith('http'))) {
+      newErrors.githubLink = 'Please provide a valid GitHub URL (must start with http/https)';
     }
 
     if (formData.skillToLearn === 'video-editing' && !formData.youtubeLink.trim()) {
       newErrors.youtubeLink = 'YouTube link is required for video editing track';
-    } else if (formData.skillToLearn === 'video-editing' && formData.youtubeLink.trim() && !formData.youtubeLink.includes('youtube.com')) {
-      newErrors.youtubeLink = 'Please provide a valid YouTube link';
+    } else if (formData.skillToLearn === 'video-editing' && formData.youtubeLink.trim() && 
+               (!formData.youtubeLink.includes('youtube.com') || !formData.youtubeLink.startsWith('http'))) {
+      newErrors.youtubeLink = 'Please provide a valid YouTube URL (must start with http/https)';
     }
 
     setErrors(newErrors);
@@ -107,35 +121,66 @@ export default function JoinUs() {
     if (!validateForm()) {
       return;
     }
-    const response = await fetch('/api/join', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(formData)
-    });
-
-    if (!response.ok) {
-      throw new Error('Network response was not ok');
-    }
-
-    const data = await response.json();
-    if(data){
-        setIsSubmitting(false);
-      setSubmitted(true);
-
-    }else{
-        setIsSubmitting(true);
-        setSubmitted(false);
-    }
 
     setIsSubmitting(true);
-    
-    // Simulate form submission
-    setTimeout(() => {
+    setSubmitError('');
+
+    try {
+      const response = await fetch('/api/join', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(formData)
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        // Handle different types of errors
+        if (response.status === 429) {
+          setSubmitError('Too many requests. Please try again later.');
+        } else if (response.status === 409) {
+          setSubmitError('An application with this email already exists.');
+        } else if (data.errors) {
+          // Handle validation errors from backend
+          const backendErrors: Errors = {};
+          data.errors.forEach((error: any) => {
+            backendErrors[error.field as keyof Errors] = error.message;
+          });
+          setErrors(backendErrors);
+        } else {
+          setSubmitError(data.message || 'Failed to submit application. Please try again.');
+        }
+        return;
+      }
+
+      // Success
+      if (data.success) {
+        setSubmitted(true);
+        // Reset form
+        setFormData({
+          name: '',
+          email: '',
+          whyConsider: '',
+          skillToLearn: '',
+          githubLink: '',
+          youtubeLink: ''
+        });
+      }
+
+    } catch (error) {
+      console.error('Network error:', error);
+      setSubmitError('Network error. Please check your connection and try again.');
+    } finally {
       setIsSubmitting(false);
-      setSubmitted(true);
-    }, 2000);
+    }
+  };
+
+  const handleReset = () => {
+    setSubmitted(false);
+    setErrors({});
+    setSubmitError('');
   };
 
   if (submitted) {
@@ -182,8 +227,7 @@ export default function JoinUs() {
               !
             </h1>
             <p className="text-lg md:text-xl text-gray-300 mb-8">
-              Thanks for joining us, <strong className="text-[#a0eb27]">{formData.name}</strong>! 
-              We've received your application and will get back to you within 48 hours.
+              Thanks for joining us! We've received your application and will get back to you within 48 hours.
             </p>
             <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/10 mb-8">
               <h3 className="text-xl font-bold text-white mb-4">What's Next?</h3>
@@ -194,7 +238,7 @@ export default function JoinUs() {
               </ul>
             </div>
             <button 
-              onClick={() => setSubmitted(false)}
+              onClick={handleReset}
               className="group relative px-8 py-3 bg-[#a9e14e] text-neutral-800 font-bold rounded-full overflow-hidden transition-all duration-300 hover:scale-105"
             >
               <span className="relative z-10">Submit Another Application</span>
@@ -252,191 +296,200 @@ export default function JoinUs() {
             </p>
           </div>
 
+          {/* Error Message */}
+          {submitError && (
+            <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-xl">
+              <p className="text-red-400 text-center">{submitError}</p>
+            </div>
+          )}
+
           {/* Form */}
-          <form onSubmit={handleSubmit} className={`bg-white/5 backdrop-blur-sm rounded-3xl p-8 md:p-12 border border-white/10 transform transition-all duration-1000 delay-200 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
-            <div className="space-y-8">
-              {/* Name Field */}
-              <div>
-                <label className="block text-white font-semibold mb-3 text-lg">
-                  Full Name <span className="text-red-400">*</span>
-                </label>
-                <input
-                  type="text"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:border-[#a0eb27] focus:bg-white/15 transition-all duration-300"
-                  placeholder="Enter your full name"
-                />
-                {errors.name && <p className="text-red-400 text-sm mt-2">{errors.name}</p>}
+
+          <form className="space-y-8" onSubmit={handleSubmit}>
+            {/* Name Field */}
+            <div>
+              <label className="block text-white font-semibold mb-3 text-lg">
+                Full Name <span className="text-red-400">*</span>
+              </label>
+              <input
+                type="text"
+                name="name"
+                value={formData.name}
+                onChange={handleInputChange}
+                maxLength={100}
+                className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:border-[#a0eb27] focus:bg-white/15 transition-all duration-300"
+                placeholder="Enter your full name"
+              />
+              {errors.name && <p className="text-red-400 text-sm mt-2">{errors.name}</p>}
+            </div>
+
+            {/* Email Field */}
+            <div>
+              <label className="block text-white font-semibold mb-3 text-lg">
+                Email Address <span className="text-red-400">*</span>
+              </label>
+              <input
+                type="email"
+                name="email"
+                value={formData.email}
+                onChange={handleInputChange}
+                maxLength={255}
+                className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:border-[#a0eb27] focus:bg-white/15 transition-all duration-300"
+                placeholder="your.email@college.edu"
+              />
+              {errors.email && <p className="text-red-400 text-sm mt-2">{errors.email}</p>}
+            </div>
+
+            {/* Why Consider You */}
+            <div>
+              <label className="block text-white font-semibold mb-3 text-lg">
+                Why should we consider you? <span className="text-red-400">*</span>
+              </label>
+              <textarea
+                name="whyConsider"
+                value={formData.whyConsider}
+                onChange={handleInputChange}
+                rows={5}
+                maxLength={1000}
+                className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:border-[#a0eb27] focus:bg-white/15 transition-all duration-300 resize-none"
+                placeholder="Tell us about your passion for innovation, any relevant experience, projects you've worked on, or what unique perspective you'd bring to our club... (minimum 50 characters)"
+              />
+              <div className="flex justify-between items-center mt-2">
+                {errors.whyConsider && <p className="text-red-400 text-sm">{errors.whyConsider}</p>}
+                <p className="text-gray-400 text-sm ml-auto">{formData.whyConsider.length}/1000 characters</p>
               </div>
+            </div>
 
-              {/* Email Field */}
-              <div>
-                <label className="block text-white font-semibold mb-3 text-lg">
-                  Email Address <span className="text-red-400">*</span>
-                </label>
-                <input
-                  type="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:border-[#a0eb27] focus:bg-white/15 transition-all duration-300"
-                  placeholder="your.email@college.edu"
-                />
-                {errors.email && <p className="text-red-400 text-sm mt-2">{errors.email}</p>}
-              </div>
-
-              {/* Why Consider You */}
-              <div>
-                <label className="block text-white font-semibold mb-3 text-lg">
-                  Why should we consider you? <span className="text-red-400">*</span>
-                </label>
-                <textarea
-                  name="whyConsider"
-                  value={formData.whyConsider}
-                  onChange={handleInputChange}
-                  rows={5}
-                  className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:border-[#a0eb27] focus:bg-white/15 transition-all duration-300 resize-none"
-                  placeholder="Tell us about your passion for innovation, any relevant experience, projects you've worked on, or what unique perspective you'd bring to our club... (minimum 50 characters)"
-                />
-                <div className="flex justify-between items-center mt-2">
-                  {errors.whyConsider && <p className="text-red-400 text-sm">{errors.whyConsider}</p>}
-                  <p className="text-gray-400 text-sm ml-auto">{formData.whyConsider.length} characters</p>
-                </div>
-              </div>
-
-              {/* Skill Selection */}
-              <div>
-                <label className="block text-white font-semibold mb-3 text-lg">
-                  What skill do you want to learn? <span className="text-red-400">*</span>
-                </label>
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div
-                    className={`relative p-6 border-2 rounded-xl cursor-pointer transition-all duration-300 ${
-                      formData.skillToLearn === 'software'
-                        ? 'border-[#a0eb27] bg-[#a0eb27]/10'
-                        : 'border-white/20 bg-white/5 hover:border-white/40 hover:bg-white/10'
-                    }`}
-                    onClick={() => setFormData(prev => ({ ...prev, skillToLearn: 'software', youtubeLink: '' }))}
-                  >
-                    <input
-                      type="radio"
-                      name="skillToLearn"
-                      value="software"
-                      checked={formData.skillToLearn === 'software'}
-                      onChange={handleInputChange}
-                      className="sr-only"
-                    />
-                    <div className="text-center">
-                      <div className="text-4xl mb-3">💻</div>
-                      <h3 className="text-xl font-bold text-white mb-2">Software Development</h3>
-                      <p className="text-gray-300 text-sm">Learn programming, web development, app creation, and more</p>
-                    </div>
-                    {formData.skillToLearn === 'software' && (
-                      <div className="absolute top-2 right-2 w-6 h-6 bg-[#a0eb27] rounded-full flex items-center justify-center">
-                        <span className="text-black text-sm">✓</span>
-                      </div>
-                    )}
-                  </div>
-
-                  <div
-                    className={`relative p-6 border-2 rounded-xl cursor-pointer transition-all duration-300 ${
-                      formData.skillToLearn === 'video-editing'
-                        ? 'border-[#a0eb27] bg-[#a0eb27]/10'
-                        : 'border-white/20 bg-white/5 hover:border-white/40 hover:bg-white/10'
-                    }`}
-                    onClick={() => setFormData(prev => ({ ...prev, skillToLearn: 'video-editing', githubLink: '' }))}
-                  >
-                    <input
-                      type="radio"
-                      name="skillToLearn"
-                      value="video-editing"
-                      checked={formData.skillToLearn === 'video-editing'}
-                      onChange={handleInputChange}
-                      className="sr-only"
-                    />
-                    <div className="text-center">
-                      <div className="text-4xl mb-3">🎬</div>
-                      <h3 className="text-xl font-bold text-white mb-2">Video Editing</h3>
-                      <p className="text-gray-300 text-sm">Master video editing, motion graphics, and content creation</p>
-                    </div>
-                    {formData.skillToLearn === 'video-editing' && (
-                      <div className="absolute top-2 right-2 w-6 h-6 bg-[#a0eb27] rounded-full flex items-center justify-center">
-                        <span className="text-black text-sm">✓</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-                {errors.skillToLearn && <p className="text-red-400 text-sm mt-2">{errors.skillToLearn}</p>}
-              </div>
-
-              {/* Conditional Fields */}
-              {formData.skillToLearn === 'software' && (
-                <div className="animate-fadeIn">
-                  <label className="block text-white font-semibold mb-3 text-lg">
-                    GitHub Profile Link <span className="text-red-400">*</span>
-                  </label>
-                  <input
-                    type="url"
-                    name="githubLink"
-                    value={formData.githubLink}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:border-[#a0eb27] focus:bg-white/15 transition-all duration-300"
-                    placeholder="https://github.com/yourusername"
-                  />
-                  <p className="text-gray-400 text-sm mt-2">Share your GitHub profile so we can see your coding projects and contributions</p>
-                  {errors.githubLink && <p className="text-red-400 text-sm mt-2">{errors.githubLink}</p>}
-                </div>
-              )}
-
-              {formData.skillToLearn === 'video-editing' && (
-                <div className="animate-fadeIn">
-                  <label className="block text-white font-semibold mb-3 text-lg">
-                    YouTube Video Link <span className="text-red-400">*</span>
-                  </label>
-                  <input
-                    type="url"
-                    name="youtubeLink"
-                    value={formData.youtubeLink}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:border-[#a0eb27] focus:bg-white/15 transition-all duration-300"
-                    placeholder="https://youtube.com/watch?v=..."
-                  />
-                  <p className="text-gray-400 text-sm mt-2">Share a video you've edited to showcase your current skills</p>
-                  {errors.youtubeLink && <p className="text-red-400 text-sm mt-2">{errors.youtubeLink}</p>}
-                </div>
-              )}
-
-              {/* Submit Button */}
-              <div className="text-center pt-4">
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className={`group relative px-12 py-4 bg-[#a9e14e] text-neutral-800 font-bold rounded-full overflow-hidden transition-all duration-300 ${
-                    isSubmitting 
-                      ? 'opacity-70 cursor-not-allowed' 
-                      : 'hover:scale-105 hover:shadow-2xl hover:shadow-yellow-400/25'
+            {/* Skill Selection */}
+            <div>
+              <label className="block text-white font-semibold mb-3 text-lg">
+                What skill do you want to learn? <span className="text-red-400">*</span>
+              </label>
+              <div className="grid md:grid-cols-2 gap-4">
+                <div
+                  className={`relative p-6 border-2 rounded-xl cursor-pointer transition-all duration-300 ${
+                    formData.skillToLearn === 'software'
+                      ? 'border-[#a0eb27] bg-[#a0eb27]/10'
+                      : 'border-white/20 bg-white/5 hover:border-white/40 hover:bg-white/10'
                   }`}
+                  onClick={() => setFormData(prev => ({ ...prev, skillToLearn: 'software', youtubeLink: '' }))}
                 >
-                  <span className="relative z-10 flex items-center justify-center">
-                    {isSubmitting ? (
-                      <>
-                        <div className="w-5 h-5 border-2 border-neutral-800 border-t-transparent rounded-full animate-spin mr-2"></div>
-                        Submitting...
-                      </>
-                    ) : (
-                      <>
-                        Join sVd Labs
-                        <span className="ml-2 group-hover:translate-x-1 transition-transform duration-300">→</span>
-                      </>
-                    )}
-                  </span>
-                  {!isSubmitting && (
-                    <div className="absolute inset-0 bg-gradient-to-r from-yellow-300 to-yellow-400 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left" />
+                  <input
+                    type="radio"
+                    name="skillToLearn"
+                    value="software"
+                    checked={formData.skillToLearn === 'software'}
+                    onChange={handleInputChange}
+                    className="sr-only"
+                  />
+                  <div className="text-center">
+                    <div className="text-4xl mb-3">💻</div>
+                    <h3 className="text-xl font-bold text-white mb-2">Software Development</h3>
+                    <p className="text-gray-300 text-sm">Learn programming, web development, app creation, and more</p>
+                  </div>
+                  {formData.skillToLearn === 'software' && (
+                    <div className="absolute top-2 right-2 w-6 h-6 bg-[#a0eb27] rounded-full flex items-center justify-center">
+                      <span className="text-black text-sm">✓</span>
+                    </div>
                   )}
-                </button>
-                              </div>
+                </div>
+
+                <div
+                  className={`relative p-6 border-2 rounded-xl cursor-pointer transition-all duration-300 ${
+                    formData.skillToLearn === 'video-editing'
+                      ? 'border-[#a0eb27] bg-[#a0eb27]/10'
+                      : 'border-white/20 bg-white/5 hover:border-white/40 hover:bg-white/10'
+                  }`}
+                  onClick={() => setFormData(prev => ({ ...prev, skillToLearn: 'video-editing', githubLink: '' }))}
+                >
+                  <input
+                    type="radio"
+                    name="skillToLearn"
+                    value="video-editing"
+                    checked={formData.skillToLearn === 'video-editing'}
+                    onChange={handleInputChange}
+                    className="sr-only"
+                  />
+                  <div className="text-center">
+                    <div className="text-4xl mb-3">🎬</div>
+                    <h3 className="text-xl font-bold text-white mb-2">Video Editing</h3>
+                    <p className="text-gray-300 text-sm">Master video editing, motion graphics, and content creation</p>
+                  </div>
+                  {formData.skillToLearn === 'video-editing' && (
+                    <div className="absolute top-2 right-2 w-6 h-6 bg-[#a0eb27] rounded-full flex items-center justify-center">
+                      <span className="text-black text-sm">✓</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+              {errors.skillToLearn && <p className="text-red-400 text-sm mt-2">{errors.skillToLearn}</p>}
+            </div>
+
+            {/* Conditional Fields */}
+            {formData.skillToLearn === 'software' && (
+              <div className="animate-fadeIn">
+                <label className="block text-white font-semibold mb-3 text-lg">
+                  GitHub Profile Link <span className="text-red-400">*</span>
+                </label>
+                <input
+                  type="url"
+                  name="githubLink"
+                  value={formData.githubLink}
+                  onChange={handleInputChange}
+                  className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:border-[#a0eb27] focus:bg-white/15 transition-all duration-300"
+                  placeholder="https://github.com/yourusername"
+                />
+                <p className="text-gray-400 text-sm mt-2">Share your GitHub profile so we can see your coding projects and contributions</p>
+                {errors.githubLink && <p className="text-red-400 text-sm mt-2">{errors.githubLink}</p>}
+              </div>
+            )}
+
+            {formData.skillToLearn === 'video-editing' && (
+              <div className="animate-fadeIn">
+                <label className="block text-white font-semibold mb-3 text-lg">
+                  YouTube Video Link <span className="text-red-400">*</span>
+                </label>
+                <input
+                  type="url"
+                  name="youtubeLink"
+                  value={formData.youtubeLink}
+                  onChange={handleInputChange}
+                  className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:border-[#a0eb27] focus:bg-white/15 transition-all duration-300"
+                  placeholder="https://youtube.com/watch?v=..."
+                />
+                <p className="text-gray-400 text-sm mt-2">Share a video you've edited to showcase your current skills</p>
+                {errors.youtubeLink && <p className="text-red-400 text-sm mt-2">{errors.youtubeLink}</p>}
+              </div>
+            )}
+
+            {/* Submit Button */}
+            <div className="text-center pt-4">
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className={`group relative px-12 py-4 bg-[#a9e14e] text-neutral-800 font-bold rounded-full overflow-hidden transition-all duration-300 ${
+                  isSubmitting 
+                    ? 'opacity-70 cursor-not-allowed' 
+                    : 'hover:scale-105 hover:shadow-2xl hover:shadow-yellow-400/25'
+                }`}
+              >
+                <span className="relative z-10 flex items-center justify-center">
+                  {isSubmitting ? (
+                    <>
+                      <div className="w-5 h-5 border-2 border-neutral-800 border-t-transparent rounded-full animate-spin mr-2"></div>
+                      Submitting...
+                    </>
+                  ) : (
+                    <>
+                      Join sVd Labs
+                      <span className="ml-2 group-hover:translate-x-1 transition-transform duration-300">→</span>
+                    </>
+                  )}
+                </span>
+                {!isSubmitting && (
+                  <div className="absolute inset-0 bg-gradient-to-r from-yellow-300 to-yellow-400 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left" />
+                )}
+              </button>
             </div>
           </form>
         </div>
