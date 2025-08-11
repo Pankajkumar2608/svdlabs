@@ -124,7 +124,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-
+// email sending part
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -132,7 +132,7 @@ const { data: emailData, error: emailError }  = await resend.emails.send({
   from: 'Pankaj <no-reply@motivationkaksha.com>',
   to: formData.email,
   subject: `Hello ${formData.name}!`,
-  html: '<p>gandu edit kar liya kar <strong>tatti kardi</strong>!</p>'
+  html: `<p>Hi ${formData.name},Details of your application are as follows <br> <br> Email: ${formData.email} <br> Why you want to learn ${formData.skillToLearn} <br> Why you want to join our program: ${formData.whyConsider} <br> GitHub Link: ${formData.githubLink} <br> YouTube Link: ${formData.youtubeLink},</p><p>Thanks for applying to our program. We'll be in touch soon!</p><p>Best regards,<br>SVD LAB Team</p>`,
 });
 if (emailError) {
   console.error("Email sending failed:", emailError);
@@ -141,7 +141,7 @@ if (emailError) {
 }
 
   console.log("Email sent successfully");
-    // Insert data using RLS-protected query
+    // Insert data in db
     const { data, error } = await supabase
       .from("userdetails")
       .insert([
