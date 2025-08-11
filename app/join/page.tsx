@@ -1,5 +1,6 @@
 "use client"
 import React, { useState, useEffect, ChangeEvent, MouseEvent, FormEvent } from 'react';
+import Navbar from '../components/Navbar';
 
 type FormData = {
   name: string;
@@ -250,6 +251,8 @@ export default function JoinUs() {
   }
 
   return (
+    <>
+    <Navbar />
     <div className="relative overflow-hidden">
       <div 
         className="relative flex flex-col justify-center items-center min-h-screen py-20"
@@ -282,7 +285,7 @@ export default function JoinUs() {
         {/* Content */}
         <div className="relative z-10 w-full max-w-4xl mx-auto px-6">
           {/* Header */}
-          <div className={`text-center mb-12 transform transition-all duration-1000 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
+          <div className={`text-center mt-5 mb-12 transform transition-all duration-1000 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
             <h2 className="text-4xl md:text-7xl font-bold text-white mb-6 leading-tight">
               Join{' '}
               <span className="relative inline-block">
@@ -494,6 +497,7 @@ export default function JoinUs() {
           </form>
         </div>
       </div>
-    </div>
+    </div></>
+    
   );
 };
