@@ -1,6 +1,7 @@
 import { NextResponse, NextRequest } from "next/server";
 import { supabase } from "@/utlis/supaClient";
 import { z } from "zod";
+import { Resend } from 'resend';
 
 // Input validation schema
 const FormDataSchema = z.object({
@@ -123,6 +124,23 @@ export async function POST(req: NextRequest) {
       );
     }
 
+
+
+const resend = new Resend(process.env.RESEND_API_KEY);
+
+const { data: emailData, error: emailError }  = await resend.emails.send({
+  from: 'Pankaj <no-reply@motivationkaksha.com>',
+  to: formData.email,
+  subject: `Hello ${formData.name}!`,
+  html: '<p>gandu edit kar liya kar <strong>tatti kardi</strong>!</p>'
+});
+if (emailError) {
+  console.error("Email sending failed:", emailError);
+} else {
+  console.log("Email sent:", emailData);
+}
+
+  console.log("Email sent successfully");
     // Insert data using RLS-protected query
     const { data, error } = await supabase
       .from("userdetails")
